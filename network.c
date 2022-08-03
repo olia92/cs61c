@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 // Include SSE intrinsics
 #if defined(_MSC_VER)
@@ -10,6 +11,7 @@
 
 // Include OpenMP
 #include <omp.h>
+#include <openacc.h>
 
 #include "layers.h"
 #include "network.h"
@@ -17,7 +19,7 @@
 
 network_t *make_network() {
     network_t *net = (network_t *) malloc(sizeof(network_t));
-
+#pragma acc enter data create (net[0:1])
     net->layers[0] = make_volume(32, 32, 3, 0.0);
     net->l0 = make_conv_layer(32, 32, 3, 5, 16, 1, 2);
 
