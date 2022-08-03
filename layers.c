@@ -13,6 +13,7 @@
 
 // Include OpenMP
 #include <omp.h>
+#include <openacc.h>
 
 #include "layers.h"
 #include "volume.h"
@@ -20,7 +21,7 @@
 conv_layer_t *make_conv_layer(int input_width, int input_height, int input_depth, int filter_width, int num_filters,
         int stride, int pad) {
     conv_layer_t *l = (conv_layer_t *) malloc(sizeof(conv_layer_t));
-
+#pragma acc enter data create(l[0:1])
     l->output_depth = num_filters;
     l->filter_width = filter_width;
     l->input_depth = input_depth;
@@ -35,14 +36,17 @@ conv_layer_t *make_conv_layer(int input_width, int input_height, int input_depth
         l->stride + 1;
     l->output_height = (l->input_height + l->pad * 2 - l->filter_height) /
         l->stride + 1;
+#pragma acc update device(l[0:1])
 
     l->filters = malloc(sizeof(volume_t *) * num_filters);
+#pragma acc enter data create(l->filters[0:num_filters])
     for (int i = 0; i < num_filters; i++) {
         l->filters[i] = make_volume(l->filter_width, l->filter_height,
             l->input_depth, 0.0);
     }
 
     l->bias = 0.0;
+#pragma acc update device(l->bias)// xreiazetai
     l->biases = make_volume(1, 1, l->output_depth, l->bias);
 
     return l;
@@ -99,7 +103,7 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
                 for(int out_x = 0; out_x < l->output_width; x += stride, out_x++) {
 
                     // Take sum of element-wise product
-                    double sum = 0.0;
+                    double sum = 0.0;           
                     for(int fy = 0; fy < filter->height; fy++) {
                         int in_y = y + fy;
                         for(int fx = 0; fx < filter->width; fx++) {
@@ -148,13 +152,20 @@ void conv_load(conv_layer_t *l, const char *file_name) {
         fscanf(fin, "%lf", &val);
         volume_set(l->biases, 0, 0, d, val);
     }
+//Update Weights and Biases on Device
+    int we=filter_width*filter_height*depth;
+    for(int f = 0; f < filters; f++) {
+#pragma acc update device(l->filters[f]->weights[0:we])
+    }
+
+#pragma acc update device(l->biases->weights[0:l->output_depth])
 
     fclose(fin);
 }
 
 relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth) {
     relu_layer_t *l = (relu_layer_t *) malloc(sizeof(relu_layer_t));
-
+#pragma acc enter data create(l[0:1])
     l->input_depth = input_depth;
     l->input_width = input_width;
     l->input_height = input_height;
@@ -162,6 +173,8 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
     l->output_width = l->input_width;
     l->output_height = l->input_height;
     l->output_depth = l->input_depth;
+
+#pragma acc update device(l[0:1])
 
     return l;
 }
@@ -183,7 +196,7 @@ void relu_forward(relu_layer_t *l, volume_t **inputs, volume_t **outputs, int st
 
 pool_layer_t *make_pool_layer(int input_width, int input_height, int input_depth, int pool_width, int stride) {
     pool_layer_t *l = (pool_layer_t *) malloc(sizeof(pool_layer_t));
-
+#pragma acc enter data create(l[0:1])
     l->pool_width = pool_width;
     l->input_depth = input_depth;
     l->input_width = input_width;
@@ -196,7 +209,7 @@ pool_layer_t *make_pool_layer(int input_width, int input_height, int input_depth
     l->output_depth = input_depth;
     l->output_width = floor((l->input_width + l->pad * 2 - l->pool_width) / l->stride + 1);
     l->output_height = floor((l->input_height + l->pad * 2 - l->pool_height) / l->stride + 1);
-
+#pragma acc update device(l[0:1])
     return l;
 }
 
@@ -248,7 +261,7 @@ void pool_forward(pool_layer_t *l, volume_t **inputs, volume_t **outputs, int st
 
 fc_layer_t *make_fc_layer(int input_width, int input_height, int input_depth, int num_neurons) {
     fc_layer_t *l = (fc_layer_t *) malloc(sizeof(fc_layer_t));
-
+#pragma acc enter data create(l[0:1])
     l->output_depth = num_neurons;
     l->input_depth = input_depth;
     l->input_width = input_width;
@@ -257,13 +270,16 @@ fc_layer_t *make_fc_layer(int input_width, int input_height, int input_depth, in
     l->num_inputs = l->input_width * l->input_height * l->input_depth;
     l->output_width = 1;
     l->output_height = 1;
+#pragma acc update device(l[0:1])
 
     l->filters = (volume_t **) malloc(sizeof(volume_t *) * num_neurons);
+    #pragma acc enter data create(l->filters[0:num_neurons])
     for (int i = 0; i < l->output_depth; i++) {
         l->filters[i] = make_volume(1, 1, l->num_inputs, 0.0);
     }
 
     l->bias = 0.0;
+    #pragma acc update device(l->bias)// xreiazetai
     l->biases = make_volume(1, 1, l->output_depth, l->bias);
 
     return l;
@@ -305,6 +321,13 @@ void fc_load(fc_layer_t *l, const char *filename) {
     for(int i = 0; i < l->output_depth; i++) {
         fscanf(fin, "%lf", &(l->biases->weights[i]));
     }
+
+    //Update Weights and Biases on Device
+    for(int f = 0; f < l->output_depth; f++) {
+#pragma acc update device(l->filters[f]->weights[0:l->num_inputs])
+    }
+
+#pragma acc update device(l->biases->weights[0:l->output_depth])
 
     fclose(fin);
 }
