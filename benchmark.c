@@ -89,13 +89,9 @@ batch_t load_batch(int batch) {
             for (int y = 0; y < 32; y++) {
                 for (int x = 0; x < 32; x++) {
                     volume_set(batchdata[i], x, y, d, ((double)data[outp++])/255.0-0.5);
-                    
                 }
             }
-        if(outp==4) printf(".");
-
         }
-
     }
 
     fclose(fin);
