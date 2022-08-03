@@ -12,6 +12,7 @@
 
 // Include OpenMP
 #include <omp.h>
+#include <openacc.h>
 
 #include "volume.h"
 
@@ -25,8 +26,9 @@ inline void volume_set(volume_t *v, int x, int y, int d, double value) {
 
 volume_t *make_volume(int width, int height, int depth, double value) {
     volume_t *new_vol = malloc(sizeof(struct volume));
+#pragma acc enter data create(new_vol[0:1])
     new_vol->weights = malloc(sizeof(double) * width * height * depth);
-
+#pragma acc enter data create(new_vol->weights[0:(width * height * depth)])
     new_vol->width = width;
     new_vol->height = height;
     new_vol->depth = depth;
@@ -38,7 +40,7 @@ volume_t *make_volume(int width, int height, int depth, double value) {
             }
         }
     }
-
+#pragma acc update device(new_vol[0:1],new_vol->weights[0:(width * height * depth)])
     return new_vol;
 }
 
@@ -54,9 +56,11 @@ void copy_volume(volume_t *dest, volume_t *src) {
             }
         }
     }
+#pragma acc data update device(dest->weights[0:(dest->width * dest->height * dest->depth)])
 }
 
 void free_volume(volume_t *v) {
     free(v->weights);
     free(v);
+#pragma acc exit data delete(v->weights[0:(v->height*v->width*v->depth)],v[0:1])
 }
