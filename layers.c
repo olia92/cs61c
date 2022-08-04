@@ -173,9 +173,7 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
     l->output_width = l->input_width;
     l->output_height = l->input_height;
     l->output_depth = l->input_depth;
-
 #pragma acc update device(l[0:1])
-
     return l;
 }
 
@@ -271,15 +269,14 @@ fc_layer_t *make_fc_layer(int input_width, int input_height, int input_depth, in
     l->output_width = 1;
     l->output_height = 1;
 #pragma acc update device(l[0:1])
-
     l->filters = (volume_t **) malloc(sizeof(volume_t *) * num_neurons);
-    #pragma acc enter data create(l->filters[0:num_neurons])
+#pragma acc enter data create(l->filters[0:num_neurons])
     for (int i = 0; i < l->output_depth; i++) {
         l->filters[i] = make_volume(1, 1, l->num_inputs, 0.0);
     }
 
     l->bias = 0.0;
-    #pragma acc update device(l->bias)// xreiazetai
+#pragma acc update device(l->bias)// xreiazetai
     l->biases = make_volume(1, 1, l->output_depth, l->bias);
 
     return l;
@@ -326,15 +323,13 @@ void fc_load(fc_layer_t *l, const char *filename) {
     for(int f = 0; f < l->output_depth; f++) {
 #pragma acc update device(l->filters[f]->weights[0:l->num_inputs])
     }
-
 #pragma acc update device(l->biases->weights[0:l->output_depth])
-
     fclose(fin);
 }
 
 softmax_layer_t *make_softmax_layer(int input_width, int input_height, int input_depth) {
     softmax_layer_t *l = (softmax_layer_t*) malloc(sizeof(softmax_layer_t));
-
+#pragma acc enter data create(l[0:1])
     l->input_depth = input_depth;
     l->input_width = input_width;
     l->input_height = input_height;
@@ -342,9 +337,9 @@ softmax_layer_t *make_softmax_layer(int input_width, int input_height, int input
     l->output_width = 1;
     l->output_height = 1;
     l->output_depth = l->input_width * l->input_height * l->input_depth;
-
+#pragma acc update device(l[0:1])
     l->likelihoods = (double*) malloc(sizeof(double) * l->output_depth);
-
+#pragma acc enter data create(l->likelihoods[0:l->output_depth])
     return l;
 }
 
