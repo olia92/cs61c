@@ -1,5 +1,6 @@
-CFLAGS?=-Wall -march=native -std=c99 -O3 -Minfo  #-Wno-unused-result -fopenmp 
 CC=nvc
+CFLAGS?=-Wall -tp=native -c99 -mp -Minfo=all -acc -g #-O3 -Mnovect
+#-Wno-unused-result  
 
 benchmark : benchmark.o network.o layers.o volume.o
 	$(CC) $(CFLAGS) -o benchmark benchmark.o network.o layers.o volume.o -lm
