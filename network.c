@@ -58,25 +58,28 @@ network_t *make_network() {
 }
 
 void free_network(network_t *net) {
-    for (int i = 0; i < NUM_LAYERS + 1; i++)
-        free_volume(net->layers[i]);
+    for (int i = 0; i < NUM_LAYERS + 1; i++){
+        free_volume(net->layers[i]);}
 
     // Free each conv layer's filters and biases
     for (int f = 0; f < net->l0->output_depth; f++) {
         free_volume(net->l0->filters[f]);
     }
+#pragma acc exit data delete(net->l0->filters)
     free(net->l0->filters);
     free_volume(net->l0->biases);
 
     for (int f = 0; f < net->l3->output_depth; f++) {
         free_volume(net->l3->filters[f]);
     }
+#pragma acc exit data delete(net->l3->filters)
     free(net->l3->filters);
     free_volume(net->l3->biases);
 
     for (int f = 0; f < net->l6->output_depth; f++) {
         free_volume(net->l6->filters[f]);
     }
+#pragma acc exit data delete(net->l6->filters)
     free(net->l6->filters);
     free_volume(net->l6->biases);
 
@@ -84,12 +87,15 @@ void free_network(network_t *net) {
     for (int f = 0; f < net->l9->output_depth; f++) {
         free_volume(net->l9->filters[f]);
     }
+#pragma acc exit data delete(net->l9->filters)
     free(net->l9->filters);
     free_volume(net->l9->biases);
 
     // Free softmax layer likelihoods
+#pragma acc exit data delete(net->l10->likelihoods)
     free(net->l10->likelihoods);
 
+#pragma acc exit data delete(net->l0,net->l1,net->l2,net->l3,net->l4,net->l5,net->l6,net->l7,net->l8,net->l9,net->l10)
     free(net->l0);
     free(net->l1);
     free(net->l2);
@@ -101,7 +107,7 @@ void free_network(network_t *net) {
     free(net->l8);
     free(net->l9);
     free(net->l10);
-
+#pragma acc exit data delete(net)
     free(net);
 }
 
