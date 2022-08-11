@@ -98,8 +98,8 @@ void free_volume(volume_t *v) {
 Για κάθε συνάρτηση `make_*()`, τοποθετούμε αντίστοιχα  *directive* μετά από κάθε `malloc` και αντιγράφουμε τα δεδομένα στο τέλος της συνάρτησης. Όπου έχουμε κλήση της `make_volume()` δεν χρειάζεται κάποιο επιπλέων `directive`.
 |   |   |
 |---|---|
-| ![make_conv_layer](make_conv_layer.png)  | ![make_fc_layer](make_fc_layer.png)  |
-| ![make_relu_layer](make_relu_layer.png)  | ![make_softmax_layer](make_softmax_layer.png)  |
+| ![make_conv_layer](images/make_conv_layer.png)  | ![make_fc_layer](images/make_fc_layer.png)  |
+| ![make_relu_layer](images/make_relu_layer.png)  | ![make_softmax_layer](images/make_softmax_layer.png)  |
 
 Στην συνάρτηση `free_network()` προσθέτουμε *directives* `exit data delete` πριν από κάθε `free`.
 
