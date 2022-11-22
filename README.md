@@ -1,0 +1,74 @@
+# Χαρακτηριστικά Υπολογιστή:
+
+## Λειτουργικό σύστημα: Ubuntu 20.04.5 LTS
+
+## Επεξεργαστής: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
+### Πληροφορίες :
+```
+$ nvcpuid 
+vendor id       : GenuineIntel
+model name      : Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
+cpu family      : 6
+model           : 61
+name            : Broadwell Core gen 5 M-5xxx
+stepping        : 4
+processors      : 4
+threads         : 2
+clflush size    : 8
+L2 cache size   : 256KB
+L3 cache size   : 3072KB
+flags           : acpi aes apic avx erms avx2 md_clear ibrs stibp l1d_flush
+flags           : ssdb cflush cmov cplds cx8 cx16 de dtes f16c ferr fma fpu
+flags           : fxsr ht lm mca mce mmx monitor movbe msr mtrr nx osxsave
+flags           : pae pat pdcm pge popcnt pse pseg36 selfsnoop speedstep sep
+flags           : sse sse2 sse3 ssse3 sse4.1 sse4.2 syscall tm tm2 tsc vme
+flags           : xsave xtpr
+default target  : -tp haswell
+```
+## Κάρτα Γραφικών:  NVIDIA GeForce 920M
+### Πληροφορίες:
+```
+$ nvaccelinfo 
+ 
+CUDA Driver Version:           11040
+NVRM version:                  NVIDIA UNIX x86_64 Kernel Module  470.141.03  Thu Jun 30 18:45:31 UTC 2022
+ 
+Device Number:                 0
+Device Name:                   NVIDIA GeForce 920M
+Device Revision Number:        3.5
+Global Memory Size:            2101739520
+Number of Multiprocessors:     2
+Concurrent Copy and Execution: Yes
+Total Constant Memory:         65536
+Total Shared Memory per Block: 49152
+Registers per Block:           65536
+Warp Size:                     32
+Maximum Threads per Block:     1024
+Maximum Block Dimensions:      1024, 1024, 64
+Maximum Grid Dimensions:       2147483647 x 65535 x 65535
+Maximum Memory Pitch:          2147483647B
+Texture Alignment:             512B
+Clock Rate:                    954 MHz
+Execution Timeout:             Yes
+Integrated Device:             No
+Can Map Host Memory:           Yes
+Compute Mode:                  default
+Concurrent Kernels:            Yes
+ECC Enabled:                   No
+Memory Clock Rate:             900 MHz
+Memory Bus Width:              64 bits
+L2 Cache Size:                 524288 bytes
+Max Threads Per SMP:           2048
+Async Engines:                 1
+Unified Addressing:            Yes
+Managed Memory:                Yes
+Concurrent Managed Memory:     No
+Default Target:                cc35
+```
+## Εκδόσεις διαθέσιμων Compiler:
+|   |   |   |
+|---|---|---|
+|NVIDIA	|nvc    |	22.3-0 64-bit target on x86-64 Linux -tp haswell |
+|GNU	  |gcc    |(Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0 |
+|	      |gcc-10	|(Ubuntu 10.3.0-1ubuntu1~20.04) 10.3.0|
+|LLVM 	|clang	|clang version 10.0.0-4ubuntu1, Target: x86_64-pc-linux-gnu,Thread model: posix|
