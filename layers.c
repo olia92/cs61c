@@ -36,6 +36,7 @@ conv_layer_t *make_conv_layer(int input_width, int input_height, int input_depth
         l->stride + 1;
     l->output_height = (l->input_height + l->pad * 2 - l->filter_height) /
         l->stride + 1;
+// #pragma acc update device(l->output_depth,l->filter_width,l->input_depth,l->input_width,l->input_height,l->filter_height,l->stride,l->pad,l->output_width,l->output_height)
 #pragma acc update device(l[0:1])
 
     l->filters = malloc(sizeof(volume_t *) * num_filters);
@@ -337,9 +338,11 @@ softmax_layer_t *make_softmax_layer(int input_width, int input_height, int input
     l->output_width = 1;
     l->output_height = 1;
     l->output_depth = l->input_width * l->input_height * l->input_depth;
+// #pragma acc update device(l->input_depth,l->input_width,l->input_height, l->output_width,l->output_height,l->output_depth)
 #pragma acc update device(l[0:1])
     l->likelihoods = (double*) malloc(sizeof(double) * l->output_depth);
 #pragma acc enter data create(l->likelihoods[0:l->output_depth])
+
     return l;
 }
 
@@ -380,4 +383,104 @@ void softmax_forward(softmax_layer_t *l, volume_t **inputs, volume_t **outputs, 
             out->weights[i] = likelihoods[i] / total;
         }
     }
+}
+
+//TEST: Convolutional Layer to TXT
+void conv_fprint(conv_layer_t *l, const char *file_name) {
+    int filter_width, filter_height, depth, filters;
+    filter_width = l->filter_width;
+    filter_height = l->filter_height;
+    depth = l->input_depth;
+    filters = l->output_depth;
+
+    FILE *fin = fopen(file_name, "w");
+
+    fprintf(fin, "%d %d %d %d\n", filter_width, filter_height, depth, filters);
+    
+    for(int f = 0; f < filters; f++) {
+        for (int x = 0; x < filter_width; x++) {
+            for (int y = 0; y < filter_height; y++) {
+                for (int d = 0; d < depth; d++) {
+                    fprintf(fin, "%.20lf\n", volume_get(l->filters[f], x, y, d));
+                }
+            }
+        }
+    }
+
+    for(int d = 0; d < l->output_depth; d++) {
+        fprintf(fin, "%.20lf\n", volume_get(l->biases, 0, 0, d));
+    }
+    
+    fclose(fin);
+}
+
+//TEST: Fully Connected Layer to TXT
+void fc_fprint(fc_layer_t *l, const char *filename) {
+
+    FILE *fin = fopen(filename, "w");
+
+    int num_inputs;
+    int output_depth;
+
+    output_depth = l->output_depth;
+    num_inputs = l->num_inputs;
+    fprintf(fin, "%d %d\n", num_inputs, output_depth);
+    
+    for(int i = 0; i < l->output_depth; i++)
+        for(int j = 0; j < l->num_inputs; j++) {
+            fprintf(fin, "%.20lf\n", (l->filters[i]->weights[j]));
+        }
+
+    for(int i = 0; i < l->output_depth; i++) {
+        fprintf(fin, "%.20lf\n", (l->biases->weights[i]));
+    }
+
+    fclose(fin);
+}
+
+
+//TEST: Change ReLu parameters on GPU
+relu_layer_t *change_relu_layer(relu_layer_t *l) {
+    // relu_layer_t *l = (relu_layer_t *) malloc(sizeof(relu_layer_t));
+#pragma acc parallel loop present(l)
+for(int i=0;i<1;i++){
+    l->input_depth-=2;
+    l->input_width-=2;
+    l->input_height-=2;
+
+    l->output_width = l->input_width;
+    l->output_height = l->input_height;
+    l->output_depth = l->input_depth;
+    }
+    return l;
+}
+//TEST: Change Pool parameters on GPU
+pool_layer_t *change_pool_layer(pool_layer_t *l) {
+    // pool_layer_t *l = (pool_layer_t *) malloc(sizeof(pool_layer_t));
+#pragma acc parallel loop present(l)
+    for(int i=0;i<1;i++){
+        l->pool_width -=2;
+        l->input_depth -=2;
+        l->input_width -=2;
+        l->input_height -=2;
+
+        l->pool_height = l->pool_width;
+        l->stride -=2;
+        l->pad -=2;
+
+        l->output_depth -=2;
+        l->output_width = floor((l->input_width + l->pad * 2 - l->pool_width) / l->stride + 1);
+        l->output_height = floor((l->input_height + l->pad * 2 - l->pool_height) / l->stride + 1);
+    }
+    return l;
+}
+//TEST:
+softmax_layer_t *change_softmax_layer(softmax_layer_t *l) {
+
+#pragma acc parallel loop present(l)
+    for (size_t i = 0; i < l->output_depth; i++){
+            l->likelihoods[i]=0.0;
+        }
+
+    return l;
 }

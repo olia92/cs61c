@@ -48,6 +48,8 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
 
 // Loads the convolutional layer weights from a file.
 void conv_load(conv_layer_t *l, const char *file_name);
+//TEST:
+void conv_fprint(conv_layer_t *l, const char *file_name);
 
 // ReLU Layer Parameters
 typedef struct relu_layer {
@@ -120,6 +122,8 @@ void fc_forward(fc_layer_t *l, volume_t **inputs, volume_t **outputs, int start,
 
 // Loads the fully-connected layer weights from a file.
 void fc_load(fc_layer_t *l, const char *filename);
+//TEST:
+void fc_fprint(fc_layer_t *l, const char *filename);
 
 // Softmax Layer Parameters
 typedef struct softmax_layer {
@@ -141,5 +145,10 @@ softmax_layer_t *make_softmax_layer(int input_width, int input_height, int input
 // Computes the forward pass for a softmax layer on the relevant inputs and
 // stores the result into the relevant outputs.
 void softmax_forward(softmax_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end);
+
+//TEST:
+relu_layer_t *change_relu_layer(relu_layer_t *l);
+pool_layer_t *change_pool_layer(pool_layer_t *l);
+softmax_layer_t *change_softmax_layer(softmax_layer_t *l);
 
 #endif

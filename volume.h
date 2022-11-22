@@ -25,7 +25,11 @@ typedef struct volume {
 double volume_get(volume_t *v, int x, int y, int d);
 
 // Sets the element in the volume at the coordinates (x, y, d) to value
+#pragma acc routine seq
 void volume_set(volume_t *v, int x, int y, int d, double value);
+
+//TEST:
+void fdump_volume(volume_t* v,const char *file_name);
 
 // Allocates a new volume with the specified dimensions, initializes it to the
 // specified value.
@@ -37,4 +41,8 @@ void copy_volume(volume_t *dest, volume_t *src);
 // Frees the weights array and the struct itself.
 void free_volume(volume_t *v);
 
+//TEST:
+volume_t *change_volume(volume_t *new_vol, double value);
+volume_t *change_volume_acc(volume_t *new_vol, double value);
+void copy_volume_host(volume_t *dest, volume_t *src);
 #endif

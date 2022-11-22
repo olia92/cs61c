@@ -1,5 +1,5 @@
 CC=nvc
-CFLAGS?=-Wall -tp=native -c99 -mp -Minfo=all -acc -g #-O3 -Mnovect
+CFLAGS?=-Wall -tp=native -c17 -mp -Minfo=all -g -pg -O0#-O3 -Mnovect -ac
 #-Wno-unused-result  
 
 benchmark : benchmark.o network.o layers.o volume.o
@@ -37,5 +37,6 @@ clean:
 	rm -f *.o
 	rm -f benchmark
 	rm -f benchmark_baseline
+	rm -f ./output/*.txt
 
 .PHONY : clean

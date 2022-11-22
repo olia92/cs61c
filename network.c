@@ -58,8 +58,8 @@ network_t *make_network() {
 }
 
 void free_network(network_t *net) {
-    for (int i = 0; i < NUM_LAYERS + 1; i++){
-        free_volume(net->layers[i]);}
+    for (int i = 0; i < NUM_LAYERS + 1; i++)
+        free_volume(net->layers[i]);
 
     // Free each conv layer's filters and biases
     for (int f = 0; f < net->l0->output_depth; f++) {
@@ -113,12 +113,52 @@ void free_network(network_t *net) {
 
 batch_t *make_batch(network_t *net, int size) {
     batch_t *out = (batch_t*) malloc(sizeof(volume_t **) * (NUM_LAYERS + 1));
+#pragma acc enter data create(out[0:NUM_LAYERS + 1])
     for (int i = 0; i < NUM_LAYERS + 1; i++) {
         out[i] = (volume_t **) malloc(sizeof(volume_t *)*size);
+#pragma acc enter data create(out[i][0:size])
         for (int j = 0; j < size; j++) {
-            out[i][j] = make_volume(net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth, 0.0);
+            out[i][j] = make_volume(net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth, 3.0);//TEST: value=3.0
         }
     }
+printf("Set batch: out[][]->weights=3.0 (HOST+DEVICE)\n");
+//TEST:-->
+   char buffer[50];
+    int we;
+    sprintf(buffer,"./output/out_h_%d_%d.txt",0,0);
+    fdump_volume(out[0][0],buffer);
+    printf("%s =3.0\n",buffer);
+// #pragma acc data  present(out)
+// #pragma acc parallel loop collapse(2)
+
+    for(int i=0; i<NUM_LAYERS+1;i++){
+        for(int j=0;j<size;j++){
+           int we=out[i][j]->depth*out[i][j]->width*out[i][j]->height;
+    // #pragma acc loop
+            for(int k=0;k<we;k++){
+                out[i][j]->weights[k]=1.2;
+        }}}
+    printf("Set batch: out[][]-->weights=1.2 (HOST)\n");
+
+    // out[0][0]->depth=99;
+    // #pragma acc update self(out[0][0]->depth)
+    //    printf("out[0][0]->depth=%d\n",out[0][0]->depth);
+
+    // for(int i=0; i<NUM_LAYERS+1;i++){
+    //     for(int j=0;j<size;j++){
+    //         we=out[i][j]->depth*out[i][j]->width*out[i][j]->height;
+    // #pragma acc update self(out[i][j]->weights[0:we])
+    // }}
+   we=out[0][0]->depth*out[0][0]->height*out[0][0]->width;
+#pragma acc update self(out[0][0]->weights[0:we])
+    printf("Copy out[][] Device to Host\n");
+    
+    sprintf(buffer,"./output/out_d_%d_%d.txt",0,0);
+    fdump_volume(out[0][0],buffer);
+    printf("if Copy Device to Host Succesful %s =3.0\n",buffer);
+
+    
+    //TEST:^
     return out;
 }
 
@@ -148,6 +188,27 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
     batch_t *b = make_batch(net, 1);
+ //TEST:-->
+        char buffer[50];
+        sprintf(buffer,"./output/b_%d_%d_1.txt",0,0);
+        fdump_volume(b[0][0],buffer);
+
+        copy_volume_host(b[0][0], input[0]);
+        printf("Copy b[0][0] contains 1st image (HOST)\n");
+    // for (int k = 0; k < NUM_LAYERS + 1; k++) {
+    //     for (int j = 0; j < 1; j++) {
+    //         sprintf(buffer,"./output/input_%d.txt",0);
+    //         fdump_volume(input[0],buffer);
+            int temp=b[0][0]->depth*b[0][0]->height*b[0][0]->width;
+            sprintf(buffer,"./output/b_%d_%d_2.txt",0,0);
+    #pragma acc data update self(b[:12][0:1],b[0][0]->weights[0:temp])
+        printf("Copy batch b[0][0] from DEVICE\n");
+            fdump_volume(b[0][0],buffer);
+            printf("if Copy Succesful %s = 3.0 \n",buffer);
+    //     }
+    // }
+    
+    //TEST:^
 
     for (int i = 0; i < n; i++) {
         copy_volume(b[0][0], input[i]);
@@ -157,5 +218,17 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
         }
     }
 
+     //TEST:-->
+     /*
+    for (int k = 0; k < NUM_LAYERS + 1; k++) {
+        for (int j = 0; j < 1; j++) {
+            char buffer[50];
+            sprintf(buffer,"./output/out_%d_%d.txt",n-1,k);
+            fdump_volume(b[k][j],buffer);
+        }
+    }
+    */
+    //TEST:^
+#pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
     free_batch(b, 1);
 }
