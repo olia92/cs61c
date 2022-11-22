@@ -1,8 +1,3 @@
-**Project Berkeley** : [https://inst.eecs.berkeley.edu/~cs61c/sp19/projects/proj4/](https://inst.eecs.berkeley.edu/~cs61c/sp19/projects/proj4/)  
-**Github Berkeley** :  [https://github.com/61c-teach/sp19-proj4-starter](https://github.com/61c-teach/sp19-proj4-starter)
-
-Makefile για nvc compiler : [https://github.com/olia92/cs61c/blob/main/Makefile](https://github.com/olia92/cs61c/blob/main/Makefile)
-
 #### Εκτέλεση με nvc
 ```
 make clean
