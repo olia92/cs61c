@@ -1,4 +1,4 @@
-[:leftwards_arrow_with_hook:](README.md#table-of-contents)  
+[:leftwards_arrow_with_hook:](../README.md#table-of-contents)  
 # [C Structs στην OpenACC](https://docs.nvidia.com/hpc-sdk/compilers/openacc-gs/#openacc-c-struct)
 
 Η OpenACC υποστηρίζει στατικά arrays και pointers σε δυναμικά arrays σε δομές struct.
