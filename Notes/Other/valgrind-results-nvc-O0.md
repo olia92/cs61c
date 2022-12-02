@@ -1,3 +1,4 @@
+[:leftwards_arrow_with_hook:](01.Makefile.md#χρήση-του-valgrind)
 ```
 $ make benchmark 
 nvc -Wall -Minfo=opt -mp -march=native -g -O0  -c benchmark.c
