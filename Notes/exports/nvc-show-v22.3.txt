@@ -1,3 +1,5 @@
+[:leftwards_arrow_with_hook:](../01.Makefile.md#interrobang-παρατήρηση-2)
+```
 $ nvc -show
 nvc-Warning-No files to process
 
@@ -1593,3 +1595,4 @@ IPA Linker:
         IPA Propagation
 Link object files to executable:
         Linker
+```
