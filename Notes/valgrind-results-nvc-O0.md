@@ -1,3 +1,4 @@
+```
 $ make benchmark 
 nvc -Wall -Minfo=opt -mp -march=native -g -O0  -c benchmark.c
 nvc -Wall -Minfo=opt -mp -march=native -g -O0  -c network.c
