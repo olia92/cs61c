@@ -11,4 +11,4 @@
 
 #### Other
 
-- [C structs in OpenACC](./C%20Structs%20στην%20OpenACC.md)
+- [C structs in OpenACC](./Other/C%20Structs%20στην%20OpenACC.md)
