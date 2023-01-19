@@ -136,21 +136,30 @@ double get_accuracy(int *samples, int *predictions, int n) {
 void run_classification(int *samples, int n, double ***keep_likelihoods) {
     printf("Making network...\n");
     network_t *net = load_cnn_snapshot();
+    // void *device_ptr = acc_deviceptr(net);
+    // if (device_ptr) {
+    //     printf("Struct has been successfully copied to the device.\n");
+    // } else {
+    //     printf("Struct has NOT been copied to the device.\n");
+    // }
     //TEST: 1-->
+    // // size_t we;
     /*
     printf("TEST:1\n");
 //Layers[0] Copy to Device, change on Device WORKS!
     fdump_volume(net->layers[0],"./output/layers0_1.txt");
     change_volume_acc(net->layers[0],3.0);
     size_t we=net->layers[0]->height*net->layers[0]->width*net->layers[0]->depth;
-    #pragma acc update self(net->layers[0]->weights[0:we])
+#pragma acc update self(net->layers[0]->weights[0:we])
     fdump_volume(net->layers[0],"./output/layers0_2.txt");
+    
 //Layers[9] Copy to Device, change on Device WORKS!
     fdump_volume(net->layers[9],"./output/layers9_1.txt");
     change_volume_acc(net->layers[9],3.0);
     we=net->layers[9]->height*net->layers[9]->width*net->layers[9]->depth;
-    #pragma acc update self(net->layers[9]->weights[0:we])
+    // #pragma acc update self(net->layers[9]->weights[0:we])
     fdump_volume(net->layers[9],"./output/layers9_2.txt");
+    
 //Conv Layers
 printf("Conv(l0_h) (%d,%d,%d)->(%d,%d,%d)\n",--net->l0->input_width,--net->l0->input_height,--net->l0->input_depth,--net->l0->output_width,--net->l0->output_height,--net->l0->output_depth);
 #pragma acc update self(net->l0->input_width,net->l0->input_height,net->l0->input_depth,net->l0->output_width,net->l0->output_height,net->l0->output_depth)
@@ -297,7 +306,7 @@ printf("likelihoods_d:\n");
         printf("%2.1f, ",net->l10->likelihoods[i]);
     }
     putchar('\n');
-    */
+   */
    //TEST: 1^
 
     batch_t batches[50];
@@ -343,95 +352,93 @@ fdump_volume(input[N],"./output/input0_2.txt");
 
     for (int c = 0; c < n; c++) {
         likelihoods[c] = (double *) malloc(sizeof(double) * NUM_CLASSES);
-            // #pragma acc enter data create(likelihoods[c][0:NUM_CLASSES])
-
     }
     #pragma acc enter data copyin(likelihoods[0:n][0:NUM_CLASSES])
     //TEST:3-->
-    /*
-    printf("TEST:3\n");
-    for(int x=0;x<NUM_CLASSES; x++){
-    likelihoods[N][x]=0.0;
-    }
-    for(int i=0;i<NUM_CLASSES;i++){
-        printf("%3.2lf ",likelihoods[N][i]);
-    }
-    putchar('\n');
-#pragma acc parallel loop present(likelihoods)
-for(int x=0;x<NUM_CLASSES; x++){
-    likelihoods[N][x]=30.0;
-    }
-#pragma acc update self(likelihoods[N][0:NUM_CLASSES])
-for(int i=0;i<NUM_CLASSES;i++){
-        printf("%3.2lf ",likelihoods[N][i]);
-    }
-    putchar('\n');
-    */
+
+//     printf("TEST:3\n");
+//     for(int x=0;x<NUM_CLASSES; x++){
+//     likelihoods[N][x]=0.0;
+//     }
+//     for(int i=0;i<NUM_CLASSES;i++){
+//         printf("%3.2lf ",likelihoods[N][i]);
+//     }
+//     putchar('\n');
+// #pragma acc parallel loop present(likelihoods)
+// for(int x=0;x<NUM_CLASSES; x++){
+//     likelihoods[N][x]=30.0;
+//     }
+// #pragma acc update self(likelihoods[N][0:NUM_CLASSES])
+// for(int i=0;i<NUM_CLASSES;i++){
+//         printf("%3.2lf ",likelihoods[N][i]);
+//     }
+//     putchar('\n');
+
     //TEST:3^
 
     printf("Running classification...\n");
     net_classify(net, input, likelihoods, n);
 
-    //TEST:4-->
-    /*
-    printf("TEST:4\n");
-for(int x=0;x<NUM_CLASSES; x++){
-    likelihoods[N][x]=0.1;
-    }
-printf("likelihoods_h[%d]:\n",N);
-    for(int i=0;i<NUM_CLASSES;i++){
-        printf("%3.2lf ",likelihoods[N][i]);
-    }
-    putchar('\n');
+//     //TEST:4-->
+//     /*
+//     printf("TEST:4\n");
+// for(int x=0;x<NUM_CLASSES; x++){
+//     likelihoods[N][x]=0.1;
+//     }
+// printf("likelihoods_h[%d]:\n",N);
+//     for(int i=0;i<NUM_CLASSES;i++){
+//         printf("%3.2lf ",likelihoods[N][i]);
+//     }
+//     putchar('\n');
 
-#pragma acc update self(likelihoods[0:n][0:NUM_CLASSES])
-printf("likelihoods_d:\n");
-for(int j=0;j<n;j++){
-    for(int i=0;i<NUM_CLASSES;i++){
-        printf("%3.2lf ",likelihoods[j][i]);
-    }putchar('\n');}
-    putchar('\n');
-    */
-    //TEST:4^
-    int predictions[n];
-    for (int i = 0; i < n; i++) {
-        int best_class = -1;
-        double max_likelihood = -INFINITY;
-        for (int c = 0; c < NUM_CLASSES; c++) {
-            if (max_likelihood < likelihoods[i][c]) {
-                max_likelihood = likelihoods[i][c];
-                best_class = c;
-            }
-        }
-        predictions[i] = best_class;
-    }
+// #pragma acc update self(likelihoods[0:n][0:NUM_CLASSES])
+// printf("likelihoods_d:\n");
+// for(int j=0;j<n;j++){
+//     for(int i=0;i<NUM_CLASSES;i++){
+//         printf("%3.2lf ",likelihoods[j][i]);
+//     }putchar('\n');}
+//     putchar('\n');
+//     */
+//     //TEST:4^
+//     int predictions[n];
+//     for (int i = 0; i < n; i++) {
+//         int best_class = -1;
+//         double max_likelihood = -INFINITY;
+//         for (int c = 0; c < NUM_CLASSES; c++) {
+//             if (max_likelihood < likelihoods[i][c]) {
+//                 max_likelihood = likelihoods[i][c];
+//                 best_class = c;
+//             }
+//         }
+//         predictions[i] = best_class;
+//     }
 
-    printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
+//     printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
 
     free_network(net);
 #pragma acc exit data delete(input)
     free(input);
 
-    for (int i = 0; i < 50; i++) {
-        if (batches[i] != NULL) {
-            for (int j = 0; j < 10000; j++) {
-                free_volume(batches[i][j]);
-            }
-    #pragma acc exit data delete(batches[i])
-            free(batches[i]);
-        }
-    }
+//     for (int i = 0; i < 50; i++) {
+//         if (batches[i] != NULL) {
+//             for (int j = 0; j < 10000; j++) {
+//                 free_volume(batches[i][j]);
+//             }
+//     #pragma acc exit data delete(batches[i])
+//             free(batches[i]);
+//         }
+//     }
 
-    if (keep_likelihoods == NULL) {
-        for (int i = 0; i < n; i++) {
-    #pragma acc exit data delete(likelihoods[i])
-            free(likelihoods[i]);
-        }
-#pragma acc exit data delete(likelihoods)
-        free(likelihoods);
-    } else {
-        *keep_likelihoods = likelihoods;
-    }
+//     if (keep_likelihoods == NULL) {
+//         for (int i = 0; i < n; i++) {
+//     #pragma acc exit data delete(likelihoods[i])
+//             free(likelihoods[i]);
+//         }
+// #pragma acc exit data delete(likelihoods)
+//         free(likelihoods);
+//     } else {
+//         *keep_likelihoods = likelihoods;
+//     }
 }
 
 // Run benchmark on a specified number samples (if there is none, then
