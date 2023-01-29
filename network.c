@@ -129,8 +129,10 @@ void free_batch(batch_t *b, int size) {
         for (int j = 0; j < size; j++) {
             free_volume(b[i][j]);
         }
+#pragma acc exit data delete(b[i][0:1])
         free(b[i]);
     }
+#pragma acc exit data delete(b)
     free(b);
 }
 
@@ -151,7 +153,9 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
     int b_size = n;
     printf("    for batch size %d\n",b_size);
-    batch_t *b = make_batch(net, b_size);
+    batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
+
+
 
     for (int i = 0; i < n; i+=b_size) {
         for(int k=0; k<b_size; k++)
