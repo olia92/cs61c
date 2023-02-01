@@ -57,7 +57,14 @@ void copy_volume(volume_t *dest, volume_t *src) {
             }
         }
     }
-#pragma acc data update device(dest->weights[0:(dest->width * dest->height * dest->depth)])
+#pragma acc update device(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+//TEST:->
+change_volume(dest,8.00);
+
+#pragma acc update self(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+
+fdump_volume(dest,"output/dest.txt");
+//TEST:^
 }
 
 //TEST:Copy Volume Host

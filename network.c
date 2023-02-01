@@ -121,6 +121,8 @@ batch_t *make_batch(network_t *net, int size) {
             out[i][j] = make_volume(net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth, 0.0);
         }
     }
+    // change_vol ume_acc(out[])
+// fdump_volume(out[0][6])
     return out;
 }
 
@@ -151,10 +153,9 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size = n;
+    int b_size = 8;
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
-
 
 
     for (int i = 0; i < n; i+=b_size) {
@@ -166,6 +167,31 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
                 likelihoods[i+k][j] = b[11][k]->weights[j];
         }
     }
+    // change_volume(b[0][6],5.0);
+    // fdump_volume(b[0][6],"output/b_0_6_h.txt");
+    
+    fdump_volume(input[6],"output/input6.txt");
+
+// #pragma acc update self (b[0:(NUM_LAYERS+1)][0:b_size])
+// for(int i=0;i<NUM_LAYERS+1;i++){
+//     for (int j = 0; j < b_size; j++){
+//      int we =b[i][j]->width*b[i][j]->height*b[i][j]->depth;
+// #pragma acc update self(b[i][j]->weights[0:we])
+//     }
+// }
+//     int we =b[0][6]->width*b[0][6]->height*b[0][6]->depth;
+// printf(" %d , %d , %d = %d \n",b[0][6]->width,b[0][6]->height,b[0][6]->depth,we);
+// #pragma acc update self(b[0][6]->weights[0:we])
+
+
+// for(int i=0;i<NUM_LAYERS+1;i++){
+//     for (int j = 0; j < b_size; j++){
+// #pragma acc update self (b[i][j]->width,b[i][j]->height,b[i][j]->depth)
+//      int we =b[i][j]->width*b[i][j]->height*b[i][j]->depth;
+// #pragma acc update self(b[i][j]->weights[0:we])
+//     }
+// }
+    // fdump_volume(b[0][6],"output/b_0_6_d.txt");
 
 #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
     free_batch(b, b_size);
