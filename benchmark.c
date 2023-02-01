@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include <openacc.h>
+
 #include "network.h"
 #include "volume.h"
 
@@ -216,6 +218,10 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
 // benchmark.
 void do_benchmark(int argc, char **argv) {
     int num_samples = DEFAULT_BENCHMARK_SIZE;
+    //
+    int version = _OPENACC;
+    printf("OpenACC runtime version: %d.%d\n", version/100, version%100);
+    //
     if (argc > 0)
         num_samples = atoi(argv[0]);
 
