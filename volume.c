@@ -45,6 +45,8 @@ volume_t *make_volume(int width, int height, int depth, double value) {
     return new_vol;
 }
 
+int counter=0;
+
 void copy_volume(volume_t *dest, volume_t *src) {
     assert(dest->width == src->width);
     assert(dest->height == src->height);
@@ -57,6 +59,7 @@ void copy_volume(volume_t *dest, volume_t *src) {
             }
         }
     }
+    printf("c%d/ ",counter++);
 #pragma acc update device(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
 // //TEST:->
 // change_volume(dest,8.00);

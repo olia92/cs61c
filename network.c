@@ -54,6 +54,10 @@ network_t *make_network() {
     net->l10 = make_softmax_layer(net->layers[10]->width, net->layers[10]->height, net->layers[10]->depth);
 
     net->layers[11] = make_volume(net->l10->output_width, net->l10->output_height, net->l10->output_depth, 0.0);
+
+    for(int i=0; i<12;i++)
+        printf("l[%d] : %d, %d, %d \n",i,net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth);
+
     return net;
 }
 
@@ -153,14 +157,16 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size = 8;
+    int b_size = n;
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
 
 
     for (int i = 0; i < n; i+=b_size) {
-        for(int k=0; k<b_size; k++)
+        for(int k=0; k<b_size; k++){
             copy_volume(b[0][k], input[i+k]);
+            // printf("%d,%d ",i,k);
+            }putchar('\n');
         net_forward(net, b, 0, b_size-1);
         for (int j = 0; j < NUM_CLASSES; j++) {
             for(int k=0; k<b_size; k++)
