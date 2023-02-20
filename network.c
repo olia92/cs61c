@@ -123,10 +123,10 @@ batch_t *make_batch(network_t *net, int size) {
 #pragma acc enter data create(out[i][0:size])
         for (int j = 0; j < size; j++) {
             out[i][j] = make_volume(net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth, 0.0);
+            printf("out[%d][%d]\n",i,j);
         }
     }
-    // change_vol ume_acc(out[])
-// fdump_volume(out[0][6])
+
     return out;
 }
 
@@ -165,8 +165,7 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
     for (int i = 0; i < n; i+=b_size) {
         for(int k=0; k<b_size; k++){
             copy_volume(b[0][k], input[i+k]);
-            // printf("%d,%d ",i,k);
-            }putchar('\n');
+            }
         net_forward(net, b, 0, b_size-1);
         for (int j = 0; j < NUM_CLASSES; j++) {
             for(int k=0; k<b_size; k++)

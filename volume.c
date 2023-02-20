@@ -59,7 +59,7 @@ void copy_volume(volume_t *dest, volume_t *src) {
             }
         }
     }
-    printf("c%d/ ",counter++);
+    // printf("c%d/ ",counter++);
 #pragma acc update device(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
 // //TEST:->
 // change_volume(dest,8.00);
