@@ -55,8 +55,8 @@ network_t *make_network() {
 
     net->layers[11] = make_volume(net->l10->output_width, net->l10->output_height, net->l10->output_depth, 0.0);
 
-    for(int i=0; i<12;i++)
-        printf("l[%d] : %d, %d, %d \n",i,net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth);
+    // for(int i=0; i<12;i++)
+    //     printf("l[%d] : %d, %d, %d \n",i,net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth);
 
     return net;
 }
@@ -123,7 +123,6 @@ batch_t *make_batch(network_t *net, int size) {
 #pragma acc enter data create(out[i][0:size])
         for (int j = 0; j < size; j++) {
             out[i][j] = make_volume(net->layers[i]->width, net->layers[i]->height, net->layers[i]->depth, 0.0);
-            printf("out[%d][%d]\n",i,j);
         }
     }
 
@@ -160,7 +159,6 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
     int b_size = n;
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
-
 
     for (int i = 0; i < n; i+=b_size) {
         for(int k=0; k<b_size; k++){

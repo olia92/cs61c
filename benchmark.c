@@ -153,13 +153,37 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     }
 
     volume_t **input = (volume_t **) malloc(sizeof(volume_t*)*n);
-#pragma acc enter data create(input[0:n][0:1])
+#pragma acc enter data create(input[0:n])
+
     for (int i = 0; i < n; i++) {
         input[i] = batches[samples[i] / 10000][samples[i] % 10000];
     int we = input[i]->width*input[i]->height*input[i]->depth;
-#pragma acc enter data copyin(input[i][0:1],input[i]->weights[0:we])
+#pragma acc enter data create(input[i][0:1],input[i]->weights[0:we])
+    }
+// Copy input to Device
+    for (int i = 0; i < n; i++) {
+    #pragma acc update device(input[i]->width,input[i]->height,input[i]->depth)
+        int we = input[i]->width*input[i]->height*input[i]->depth;
+    #pragma acc update device(input[i][0:1],input[i]->weights[0:we])
     }
 
+//TEST: 2-->
+int N=3;
+//*
+printf("TEST:2\n");
+fdump_volume(input[N],"./output/input0.txt");
+#pragma acc parallel loop collapse(3) present(input)
+for(int x=0;x<input[N]->width; x++){
+    for(int y=0;y<input[N]->height; y++){
+        for(int d=0;d<input[N]->depth; d++){
+            volume_set(input[N],x,y,d,8.0);
+    }}}
+    int we = input[N]->width*input[N]->height*input[N]->depth;
+
+    #pragma acc update self(input[N]->weights[0:32*32*3])
+fdump_volume(input[N],"./output/input0_2.txt");
+// */
+//TEST:2^
 
     double **likelihoods = (double **) malloc(sizeof(double *) * n);
         // #pragma acc enter data create(likelihoods[0:n][0:1])
@@ -196,7 +220,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
             for (int j = 0; j < 10000; j++) {
                 free_volume(batches[i][j]);
             }
-    #pragma acc exit data delete(batches[i])
+    // #pragma acc exit data delete(batches[i])
             free(batches[i]);
         }
     }

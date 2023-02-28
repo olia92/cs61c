@@ -45,7 +45,6 @@ volume_t *make_volume(int width, int height, int depth, double value) {
     return new_vol;
 }
 
-int counter=0;
 
 void copy_volume(volume_t *dest, volume_t *src) {
     assert(dest->width == src->width);
@@ -59,15 +58,17 @@ void copy_volume(volume_t *dest, volume_t *src) {
             }
         }
     }
-    // printf("c%d/ ",counter++);
-#pragma acc update device(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+
+#pragma acc update device(dest->weights[0:(dest->width * dest->height * dest->depth)])
+
 // //TEST:->
 // change_volume(dest,8.00);
 
-// #pragma acc update self(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+// // #pragma acc update self(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+// #pragma acc update self(dest->weights[0:(dest->width * dest->height * dest->depth)])
 
 // fdump_volume(dest,"output/dest.txt");
-// //TEST:^
+//TEST:^
 }
 
 //TEST:Copy Volume Host
@@ -89,7 +90,7 @@ void copy_volume_host(volume_t *dest, volume_t *src) {
 void free_volume(volume_t *v) {
     free(v->weights);
 #pragma acc exit data delete(v->weights[0:(v->height*v->width*v->depth)])
-#pragma acc exit data delete(v[0:1])
+#pragma acc exit data delete(v)
     free(v);
 }
 
