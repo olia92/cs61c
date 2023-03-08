@@ -171,25 +171,25 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
 
 //TEST: 2-->
 // int N=3;
-// //*
+
 // printf("TEST:2\n");
 // fdump_volume(input[N],"./output/input0.txt");
 
-// // // #pragma acc parallel loop collapse(3) present(input,input[N]->width,input[N]->height,input[N]->depth,input[N]->weights)
 // // #pragma acc parallel loop collapse(3) present(input,input[N]->width,input[N]->height,input[N]->depth,input[N]->weights)
-// // for(int x=0;x<input[N]->width; x++){
-// //     for(int y=0;y<input[N]->height; y++){
-// //         for(int d=0;d<input[N]->depth; d++){
-// //             volume_set(input[N],x,y,d,8.0);
-// // }}}
+// #pragma acc parallel loop collapse(3) present(input,input[N]->width,input[N]->height,input[N]->depth,input[N]->weights)
+// for(int x=0;x<input[N]->width; x++){
+//     for(int y=0;y<input[N]->height; y++){
+//         for(int d=0;d<input[N]->depth; d++){
+//             volume_set(input[N],x,y,d,8.0);
+// }}}
 // //Alternative
-// // change_volume_acc(input[N],8.0);
-// change_volume(input[N],8.0);
+// change_volume_acc(input[N],8.0);
+// // change_volume(input[N],8.0);
 
 // we = input[N]->width*input[N]->height*input[N]->depth;
 // #pragma acc update self(input[N]->weights[0:we])
 // fdump_volume(input[N],"./output/input0_2.txt");
-// */
+
 //TEST:2^
 
     double **likelihoods = (double **) malloc(sizeof(double *) * n);
@@ -197,12 +197,12 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
         likelihoods[c] = (double *) malloc(sizeof(double) * NUM_CLASSES);
     }
     #pragma acc enter data create(likelihoods[0:n][0:NUM_CLASSES])
-    //Initialise likelihoods to 0 for TEST
-    for(int i=0;i<n;i++)
-        for(int j=0;j<NUM_CLASSES;j++)
-            likelihoods[i][j]=0.0;
-    //Copy likelihoods to device
-    #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
+    // //Initialise likelihoods to 0 for TEST
+    // for(int i=0;i<n;i++)
+    //     for(int j=0;j<NUM_CLASSES;j++)
+    //         likelihoods[i][j]=0.0;
+    // //Copy likelihoods to device
+    // #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
 
     printf("Running classification...\n");
     net_classify(net, input, likelihoods, n);

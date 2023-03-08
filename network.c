@@ -156,7 +156,7 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size = n;
+    int b_size = 1;// 1200;
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
 
@@ -164,6 +164,7 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
         for(int k=0; k<b_size; k++){
             copy_volume(b[0][k], input[i+k]);
             }
+            // printf("i=%d\n",i);
         net_forward(net, b, 0, b_size-1);
         for (int j = 0; j < NUM_CLASSES; j++) {
             for(int k=0; k<b_size; k++)
