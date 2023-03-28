@@ -1,5 +1,5 @@
 CC=nvc
-CFLAGS?=-Wall -tp=native -c17 -acc -mp -Minfo=all -g #-O3 -Mnovect
+CFLAGS?=-Wall -tp=native -c17 -acc -mp -Minfo=all -g -pg #-O3 -Mnovect
 #-Wno-unused-result  
 
 benchmark : benchmark.o network.o layers.o volume.o

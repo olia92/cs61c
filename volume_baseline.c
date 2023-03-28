@@ -49,3 +49,20 @@ void free_volume(volume_t *v) {
     free(v->weights);
     free(v);
 }
+
+
+//TEST: Volume to TXT
+void fdump_volume(volume_t* v,const char *file_name) {
+
+    FILE *fin = fopen(file_name, "w");
+
+    fprintf(fin,"%d %d %d\n", v->width, v->height, v->depth);
+    for (int x = 0; x < v->width; x++) {
+        for (int y = 0; y < v->height; y++) {
+            for (int z = 0; z < v->depth; z++) {
+                fprintf(fin,"%.20lf\n", volume_get(v, x, y, z));
+            }
+        }
+    }
+    fclose(fin);
+}
