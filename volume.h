@@ -22,6 +22,7 @@ typedef struct volume {
 } volume_t;
 
 // Gets the element in the volume at the coordinates (x, y, d).
+#pragma acc routine seq
 double volume_get(volume_t *v, int x, int y, int d);
 
 // Sets the element in the volume at the coordinates (x, y, d) to value

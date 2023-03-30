@@ -90,6 +90,7 @@ conv_layer_t *make_conv_layer(int input_width, int input_height, int input_depth
 // at a coordinate (x, y, d). Finally, we add the corresponding bias for the
 // filter to the sum before putting it into the output volume.
 void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end) {
+// #pragma acc parallel loop present(inputs,outputs,l,l->filters[0:l->output_depth])
     for (int i = start; i <= end; i++) {
         volume_t *in = inputs[i];
         volume_t *out = outputs[i];
@@ -104,7 +105,8 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
                 for(int out_x = 0; out_x < l->output_width; x += stride, out_x++) {
 
                     // Take sum of element-wise product
-                    double sum = 0.0;           
+                    double sum = 0.0;
+
                     for(int fy = 0; fy < filter->height; fy++) {
                         int in_y = y + fy;
                         for(int fx = 0; fx < filter->width; fx++) {
@@ -123,6 +125,8 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
             }
         }
     }
+                //printf("conv\n");
+
 }
 
 void conv_load(conv_layer_t *l, const char *file_name) {
@@ -181,7 +185,9 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
 // Applies the Rectifier Linear Unit (ReLU) function to the input, which sets
 // output(x, y, d) to max(0.0, input(x, y, d)).
 void relu_forward(relu_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end) {
+#pragma acc parallel loop  present(l,inputs,outputs)
     for (int i = start; i <= end; i++) {
+        #pragma acc loop collapse(3) seq
         for (int x = 0; x < l->input_width; x++) {
             for (int y = 0; y < l->input_height; y++) {
                 for (int d = 0; d < l->input_depth; d++) {

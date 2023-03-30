@@ -16,6 +16,7 @@
 
 #include "volume.h"
 
+#pragma acc routine seq
 inline double volume_get(volume_t *v, int x, int y, int d) {
     return v->weights[((v->width * y) + x) * v->depth + d];
 }

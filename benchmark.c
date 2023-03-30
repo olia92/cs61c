@@ -173,7 +173,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
         likelihoods[c] = (double *) malloc(sizeof(double) * NUM_CLASSES);
     }
     #pragma acc enter data create(likelihoods[0:n][0:NUM_CLASSES])
-   
+   //*
     printf("Running classification...\n");
     net_classify(net, input, likelihoods, n);
 
@@ -191,7 +191,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     }
 
     printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
-
+//*/
     free_network(net);
 #pragma acc exit data delete(input)
 

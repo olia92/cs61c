@@ -156,7 +156,10 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size = n;
+    int b_size;
+    if(n>=1200){ b_size = 1200;}
+    else{b_size=1;}
+
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
 
