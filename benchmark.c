@@ -170,13 +170,12 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     }
 
 //TEST: 2-->
-// int N=3;
+int N=n-1;
 
-// printf("TEST:2\n");
-// fdump_volume(input[N],"./output/input0.txt");
-
-// // #pragma acc parallel loop collapse(3) present(input,input[N]->width,input[N]->height,input[N]->depth,input[N]->weights)
-// #pragma acc parallel loop collapse(3) present(input,input[N]->width,input[N]->height,input[N]->depth,input[N]->weights)
+printf("TEST:2\n");
+fdump_volume(input[N],"./output/input0.txt");
+//!!!DOYLEYEUEI!!!!
+// #pragma acc parallel loop collapse(3) present(input[N])
 // for(int x=0;x<input[N]->width; x++){
 //     for(int y=0;y<input[N]->height; y++){
 //         for(int d=0;d<input[N]->depth; d++){
@@ -186,9 +185,19 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
 // change_volume_acc(input[N],8.0);
 // // change_volume(input[N],8.0);
 
-// we = input[N]->width*input[N]->height*input[N]->depth;
-// #pragma acc update self(input[N]->weights[0:we])
-// fdump_volume(input[N],"./output/input0_2.txt");
+#pragma acc parallel loop present(input)
+for(int i=0;i<n;i++){
+#pragma acc loop collapse(3)
+for(int x=0;x<input[i]->width; x++){
+    for(int y=0;y<input[i]->height; y++){
+        for(int d=0;d<input[i]->depth; d++){
+            volume_set(input[i],x,y,d,8.0);
+}}}
+}
+
+we = input[N]->width*input[N]->height*input[N]->depth;
+#pragma acc update self(input[N]->weights[0:we])
+fdump_volume(input[N],"./output/input0_2.txt");
 
 //TEST:2^
 
@@ -203,7 +212,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     //         likelihoods[i][j]=0.0;
     // //Copy likelihoods to device
     // #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
-
+/*
     printf("Running classification...\n");
     net_classify(net, input, likelihoods, n);
 
@@ -221,7 +230,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     }
 
     printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
-
+*/
     free_network(net);
 #pragma acc exit data delete(input)
     free(input);
