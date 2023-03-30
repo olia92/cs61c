@@ -176,24 +176,28 @@ printf("TEST:2\n");
 fdump_volume(input[N],"./output/input0.txt");
 //!!!DOYLEYEUEI!!!!
 // #pragma acc parallel loop collapse(3) present(input[N])
-// for(int x=0;x<input[N]->width; x++){
-//     for(int y=0;y<input[N]->height; y++){
-//         for(int d=0;d<input[N]->depth; d++){
-//             volume_set(input[N],x,y,d,8.0);
-// }}}
+// #pragma acc parallel loop collapse(3) default(present)
+//DEN DOULEYEI
+#pragma acc parallel loop collapse(3) present(input)
+for(int x=0;x<input[N]->width; x++){
+    for(int y=0;y<input[N]->height; y++){
+        for(int d=0;d<input[N]->depth; d++){
+            volume_set(input[N],x,y,d,8.0);
+}}}
 // //Alternative
 // change_volume_acc(input[N],8.0);
 // // change_volume(input[N],8.0);
 
-#pragma acc parallel loop present(input)
-for(int i=0;i<n;i++){
-#pragma acc loop collapse(3)
-for(int x=0;x<input[i]->width; x++){
-    for(int y=0;y<input[i]->height; y++){
-        for(int d=0;d<input[i]->depth; d++){
-            volume_set(input[i],x,y,d,8.0);
-}}}
-}
+// #pragma acc parallel loop present(input)
+// #pragma acc parallel loop default(present)
+// for(int i=0;i<n;i++){
+// #pragma acc loop collapse(3)
+// for(int x=0;x<input[i]->width; x++){
+//     for(int y=0;y<input[i]->height; y++){
+//         for(int d=0;d<input[i]->depth; d++){
+//             volume_set(input[i],x,y,d,8.0);
+// }}}
+// }
 
 we = input[N]->width*input[N]->height*input[N]->depth;
 #pragma acc update self(input[N]->weights[0:we])
