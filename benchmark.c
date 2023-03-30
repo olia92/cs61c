@@ -176,7 +176,9 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
    //*
     printf("Running classification...\n");
     net_classify(net, input, likelihoods, n);
-
+//TEST:
+// printf("TEST: stop at net_classification\n");
+//*
     int predictions[n];
     for (int i = 0; i < n; i++) {
         int best_class = -1;

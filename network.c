@@ -143,7 +143,8 @@ void free_batch(batch_t *b, int size) {
 
 void net_forward(network_t *net, batch_t *b, int start, int end) {
     conv_forward(net->l0, b[0], b[1], start, end);
-    relu_forward(net->l1, b[1], b[2], start, end);
+        // printf("end conv\n");
+    relu_forward(net->l1, b[1], b[2], start, end); printf("end relu 1\n");
     pool_forward(net->l2, b[2], b[3], start, end);
     conv_forward(net->l3, b[3], b[4], start, end);
     relu_forward(net->l4, b[4], b[5], start, end);
@@ -153,6 +154,7 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
     pool_forward(net->l8, b[8], b[9], start, end);
     fc_forward(net->l9, b[9], b[10], start, end);
     softmax_forward(net->l10, b[10], b[11], start, end);
+// printf("TEST-relu_forward Layer 2\n");
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
