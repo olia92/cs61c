@@ -186,10 +186,11 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
 // output(x, y, d) to max(0.0, input(x, y, d)).
 void relu_forward(relu_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end) {
     printf("relu [%d:%d]\n(%d)\n",start,end,end-start+1);
-// #pragma acc parallel loop present(l,inputs,outputs)//no working
+ // #pragma acc parallel loop present(l,inputs,outputs)//no working
 // #pragma acc parallel loop present(l) present(outputs[start:(end-start+1)],inputs[start:(end-start+1)])// no working
-#pragma acc parallel loop default(present)
 //present(l,outputs[start:(end-start+1)],inputs[start:(end-start+1)])
+
+#pragma acc parallel loop default(present)
   for (int i = start; i <= end; i++) {
     #pragma acc loop collapse(3) default(present)
         for (int x = 0; x < l->input_width; x++) {
