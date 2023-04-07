@@ -186,51 +186,38 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
 // Applies the Rectifier Linear Unit (ReLU) function to the input, which sets
 // output(x, y, d) to max(0.0, input(x, y, d)).
 void relu_forward(relu_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end) {
-// #pragma acc parallel loop present(l,inputs,outputs)//no working
-// #pragma acc parallel loop present(l) present(outputs[start:(end-start+1)],inputs[start:(end-start+1)])// no working
-                           //present(l,outputs[start:(end-start+1)],inputs[start:(end-start+1)])
-//TEST:->
 
-// fdump_volume(inputs[1],"output/inputs_1_h.txt");
-// int we =inputs[1]->width*inputs[1]->height*inputs[1]->depth;
-// for(int i=start;i<=end;i++){
-//     int we =inputs[i]->width*inputs[i]->height*inputs[i]->depth;
-// #pragma acc update device(inputs[i]->width,inputs[i]->height,inputs[i]->depth)
-// #pragma acc update device(inputs[i]->weights[0:we])
-// }
-// for(int i=start; i<=end;i++){
-//     change_volume_acc(inputs[i],3.0);
-// }
-// #pragma acc update self(inputs[1]->weights[0:we])
-// fdump_volume(inputs[1],"output/inputs_1_d.txt");
-//TEST:^
-
+//TEST: Xreiazetai prosorina giati den  kano olous tous upologismous sth gpu
 for(int i=start;i<=end;i++){
         int we = inputs[i]->width*inputs[i]->height*inputs[i]->depth;
 #pragma acc update device(inputs[i]->weights[0:we])
     }
+//TEST:^ Prosorino
 
-// #pragma acc parallel loop present(l)
+
 #pragma acc parallel loop default(present)
   for (int i = start; i <= end; i++) {
     #pragma acc loop collapse(3)
         for (int x = 0; x < l->input_width; x++) {
             for (int y = 0; y < l->input_height; y++) {
                 for (int d = 0; d < l->input_depth; d++) {
-                    double value = inputs[i]->weights[((inputs[i]->width * y) + x) * inputs[i]->depth + d];//(volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d);
-                    // volume_set(outputs[i], x, y, d, value);
+                    double value = inputs[i]->weights[((inputs[i]->width * y) + x) * inputs[i]->depth + d];
                     if(value<0.0) value=0.0;
+                    //(volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d);
                     outputs[i]->weights[((outputs[i]->width * y) + x) * outputs[i]->depth + d] = value;
+                     // volume_set(outputs[i], x, y, d, value);
 
                 }
             }
         }
     }
-
+//TEST: Prosorino, Antigrafi apotelesmaton sto host giati den ginontai oi parakato upologismoi sth gpu
     for(int i=start;i<=end;i++){
         int we = outputs[i]->width*outputs[i]->height*outputs[i]->depth;
 #pragma acc update self(outputs[i]->weights[0:we])
     }
+//TEST:^ Prosorino.
+
 }
 
 pool_layer_t *make_pool_layer(int input_width, int input_height, int input_depth, int pool_width, int stride) {
