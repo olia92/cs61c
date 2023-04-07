@@ -143,7 +143,7 @@ void free_batch(batch_t *b, int size) {
 
 void net_forward(network_t *net, batch_t *b, int start, int end) {
     conv_forward(net->l0, b[0], b[1], start, end);
-        // printf("end conv\n");
+        printf("end conv\n");
     relu_forward(net->l1, b[1], b[2], start, end); printf("end relu 1\n");
     pool_forward(net->l2, b[2], b[3], start, end);
     conv_forward(net->l3, b[3], b[4], start, end);
@@ -158,9 +158,9 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size;
-    if(n>=1200){ b_size = 1200;}
-    else{b_size=1;}
+    int b_size=1200/2;
+    // if(n>=1200){ b_size = 1200;}
+    // else{b_size=1;}
 
     printf("    for batch size %d\n",b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
@@ -177,8 +177,13 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
     }
 
 //TEST: b ->
-//     change_volume(b[0][6],5.0);
-//     fdump_volume(b[0][6],"output/b_0_6_h.txt");
+    // change_volume(b[1][6],5.0);
+    // fdump_volume(b[1][6],"output/b_1_6_h.txt");
+//     change_volume_acc(b[1][6],10.0);
+// int we =b[1][6]->width*b[1][6]->height*b[1][6]->depth;
+// #pragma acc update self(b[1][6]->weights[0:we])
+
+//     fdump_volume(b[1][6],"output/b_0_6_d.txt");
     
 //     fdump_volume(input[n-b_size+6],"output/input6.txt");
 

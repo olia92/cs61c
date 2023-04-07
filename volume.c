@@ -51,7 +51,8 @@ void copy_volume(volume_t *dest, volume_t *src) {
     assert(dest->width == src->width);
     assert(dest->height == src->height);
     assert(dest->depth == src->depth);
-
+    
+#pragma acc parallel loop collapse(3) default(present)
     for (int x = 0; x < dest->width; x++) {
         for (int y = 0; y < dest->height; y++) {
             for (int d = 0; d < dest->depth; d++) {
@@ -60,12 +61,16 @@ void copy_volume(volume_t *dest, volume_t *src) {
         }
     }
 
-#pragma acc update device(dest->weights[0:(dest->width * dest->height * dest->depth)])
+//This When copy volume on the host ->
+// #pragma acc update device(dest->weights[0:(dest->width * dest->height * dest->depth)])
+
+//TEST: This Copy Volme to Device
+#pragma acc update host(dest->weights[0:(dest->width * dest->height * dest->depth)])
 
 // //TEST:->
 // change_volume(dest,8.00);
 
-// // #pragma acc update self(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
+// #pragma acc update self(dest->width,dest->height,dest->depth,dest->weights[0:(dest->width * dest->height * dest->depth)])
 // #pragma acc update self(dest->weights[0:(dest->width * dest->height * dest->depth)])
 
 // fdump_volume(dest,"output/dest.txt");

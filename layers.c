@@ -36,8 +36,8 @@ conv_layer_t *make_conv_layer(int input_width, int input_height, int input_depth
         l->stride + 1;
     l->output_height = (l->input_height + l->pad * 2 - l->filter_height) /
         l->stride + 1;
-// #pragma acc update device(l->output_depth,l->filter_width,l->input_depth,l->input_width,l->input_height,l->filter_height,l->stride,l->pad,l->output_width,l->output_height)
-#pragma acc update device(l[0:1])
+#pragma acc update device(l->output_depth,l->filter_width,l->input_depth,l->input_width,l->input_height,l->filter_height,l->stride,l->pad,l->output_width,l->output_height)
+// #pragma acc update device(l[0:1])
 
     l->filters = malloc(sizeof(volume_t *) * num_filters);
 #pragma acc enter data create(l->filters[0:num_filters])
@@ -178,29 +178,58 @@ relu_layer_t *make_relu_layer(int input_width, int input_height, int input_depth
     l->output_width = l->input_width;
     l->output_height = l->input_height;
     l->output_depth = l->input_depth;
-#pragma acc update device(l[0:1])
+#pragma acc update device(l->input_depth,l->input_width,l->input_height,l->output_width,l->output_height,l->output_depth)
+// #pragma acc update device(l[0:1])
     return l;
 }
 
 // Applies the Rectifier Linear Unit (ReLU) function to the input, which sets
 // output(x, y, d) to max(0.0, input(x, y, d)).
 void relu_forward(relu_layer_t *l, volume_t **inputs, volume_t **outputs, int start, int end) {
-    printf("relu [%d:%d]\n(%d)\n",start,end,end-start+1);
- // #pragma acc parallel loop present(l,inputs,outputs)//no working
+// #pragma acc parallel loop present(l,inputs,outputs)//no working
 // #pragma acc parallel loop present(l) present(outputs[start:(end-start+1)],inputs[start:(end-start+1)])// no working
-//present(l,outputs[start:(end-start+1)],inputs[start:(end-start+1)])
+                           //present(l,outputs[start:(end-start+1)],inputs[start:(end-start+1)])
+//TEST:->
 
+// fdump_volume(inputs[1],"output/inputs_1_h.txt");
+// int we =inputs[1]->width*inputs[1]->height*inputs[1]->depth;
+// for(int i=start;i<=end;i++){
+//     int we =inputs[i]->width*inputs[i]->height*inputs[i]->depth;
+// #pragma acc update device(inputs[i]->width,inputs[i]->height,inputs[i]->depth)
+// #pragma acc update device(inputs[i]->weights[0:we])
+// }
+// for(int i=start; i<=end;i++){
+//     change_volume_acc(inputs[i],3.0);
+// }
+// #pragma acc update self(inputs[1]->weights[0:we])
+// fdump_volume(inputs[1],"output/inputs_1_d.txt");
+//TEST:^
+
+for(int i=start;i<=end;i++){
+        int we = inputs[i]->width*inputs[i]->height*inputs[i]->depth;
+#pragma acc update device(inputs[i]->weights[0:we])
+    }
+
+// #pragma acc parallel loop present(l)
 #pragma acc parallel loop default(present)
   for (int i = start; i <= end; i++) {
-    #pragma acc loop collapse(3) default(present)
+    #pragma acc loop collapse(3)
         for (int x = 0; x < l->input_width; x++) {
             for (int y = 0; y < l->input_height; y++) {
                 for (int d = 0; d < l->input_depth; d++) {
-                    double value = (volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d);
-                    volume_set(outputs[i], x, y, d, value);
+                    double value = inputs[i]->weights[((inputs[i]->width * y) + x) * inputs[i]->depth + d];//(volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d);
+                    // volume_set(outputs[i], x, y, d, value);
+                    if(value<0.0) value=0.0;
+                    outputs[i]->weights[((outputs[i]->width * y) + x) * outputs[i]->depth + d] = value;
+
                 }
             }
         }
+    }
+
+    for(int i=start;i<=end;i++){
+        int we = outputs[i]->width*outputs[i]->height*outputs[i]->depth;
+#pragma acc update self(outputs[i]->weights[0:we])
     }
 }
 
