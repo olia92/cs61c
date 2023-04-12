@@ -158,20 +158,28 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 }
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
-    int b_size=1200/2;
-    // if(n>=1200){ b_size = 1200;}
+    int b_size=n;
+    int modulo = n%b_size;
+    if(n>=1000){ b_size = 1000;}
     // else{b_size=1;}
 
     printf("    for batch size %d\n",b_size);
+    printf("    n mod b_size %d\n",n%b_size);
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
 
     for (int i = 0; i < n; i+=b_size) {
-        for(int k=0; k<b_size; k++){
+        
+        int batch_size = b_size;
+        if (i + b_size > n) {
+            batch_size = n - i;
+        }
+
+        for(int k=0; k<batch_size; k++){
             copy_volume(b[0][k], input[i+k]);
             }
-        net_forward(net, b, 0, b_size-1);
+        net_forward(net, b, 0, batch_size-1);
         for (int j = 0; j < NUM_CLASSES; j++) {
-            for(int k=0; k<b_size; k++)
+            for(int k=0; k<batch_size; k++)
                 likelihoods[i+k][j] = b[11][k]->weights[j];
         }
     }
@@ -193,7 +201,7 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
 
 //     fdump_volume(b[0][6],"output/b_0_6_d.txt");
 //TEST: b ^
-
+printf("end:Forward Pass\n");
 #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
     free_batch(b, b_size);
 }

@@ -1,6 +1,7 @@
 CC=nvc
-CFLAGS?=-Wall -tp=native -c17 -acc -mp -Minfo=all -g #-gpu=managed #-O3 -Mnovect
+CFLAGS?=-Wall -tp=native -c17 -mp -Minfo=all -g -acc #-gpu=managed #-O3 -Mnovect
 #-Wno-unused-result  
+
 
 benchmark : benchmark.o network.o layers.o volume.o
 	$(CC) $(CFLAGS) -o benchmark benchmark.o network.o layers.o volume.o -lm
