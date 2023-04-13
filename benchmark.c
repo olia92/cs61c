@@ -192,7 +192,7 @@ void run_classification(int *samples, int n, double ***keep_likelihoods) {
     }
 
     printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
-//*/
+
     free_network(net);
 #pragma acc exit data delete(input)
 
