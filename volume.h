@@ -23,11 +23,11 @@ typedef struct volume {
 
 // Gets the element in the volume at the coordinates (x, y, d).
 #pragma acc routine seq
-double volume_get(volume_t *v, int x, int y, int d);
+inline double volume_get(volume_t *v, int x, int y, int d);
 
 // Sets the element in the volume at the coordinates (x, y, d) to value
 #pragma acc routine seq
-void volume_set(volume_t *v, int x, int y, int d, double value);
+inline void volume_set(volume_t *v, int x, int y, int d, double value);
 
 //TEST:
 void fdump_volume(volume_t* v,const char *file_name);

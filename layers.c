@@ -106,7 +106,6 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
 
                     // Take sum of element-wise product
                     double sum = 0.0;
-
                     for(int fy = 0; fy < filter->height; fy++) {
                         int in_y = y + fy;
                         for(int fx = 0; fx < filter->width; fx++) {
@@ -125,8 +124,6 @@ void conv_forward(conv_layer_t *l, volume_t **inputs, volume_t **outputs, int st
             }
         }
     }
-                //printf("conv\n");
-
 }
 
 void conv_load(conv_layer_t *l, const char *file_name) {
@@ -193,31 +190,28 @@ for(int i=start;i<=end;i++){
 #pragma acc update device(inputs[i]->weights[0:we])
     }
 //TEST:^ Prosorino
-
-
 #pragma acc parallel loop default(present)
   for (int i = start; i <= end; i++) {
     #pragma acc loop collapse(3)
         for (int x = 0; x < l->input_width; x++) {
             for (int y = 0; y < l->input_height; y++) {
                 for (int d = 0; d < l->input_depth; d++) {
-                    double value = inputs[i]->weights[((inputs[i]->width * y) + x) * inputs[i]->depth + d];
-                    if(value<0.0) value=0.0;
-                    //(volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d);
-                    outputs[i]->weights[((outputs[i]->width * y) + x) * outputs[i]->depth + d] = value;
-                     // volume_set(outputs[i], x, y, d, value);
-
+                    //double value = (volume_get(inputs[i], x, y, d) < 0.0) ? 0.0 : volume_get(inputs[i], x, y, d); //Original
+                    //volume_set(outputs[i], x, y, d, value); //Original
+                    double value = inputs[i]->weights[((inputs[i]->width * y) + x) * inputs[i]->depth + d];//WORKS
+                    if(value<0.0) value=0.0;//WORKS
+                    outputs[i]->weights[((outputs[i]->width * y) + x) * outputs[i]->depth + d] = value;//WORKS
                 }
             }
-        }
+        }             
     }
+
 //TEST: Prosorino, Antigrafi apotelesmaton sto host giati den ginontai oi parakato upologismoi sth gpu
     for(int i=start;i<=end;i++){
         int we = outputs[i]->width*outputs[i]->height*outputs[i]->depth;
 #pragma acc update self(outputs[i]->weights[0:we])
     }
 //TEST:^ Prosorino.
-
 }
 
 pool_layer_t *make_pool_layer(int input_width, int input_height, int input_depth, int pool_width, int stride) {
@@ -235,7 +229,10 @@ pool_layer_t *make_pool_layer(int input_width, int input_height, int input_depth
     l->output_depth = input_depth;
     l->output_width = floor((l->input_width + l->pad * 2 - l->pool_width) / l->stride + 1);
     l->output_height = floor((l->input_height + l->pad * 2 - l->pool_height) / l->stride + 1);
-#pragma acc update device(l[0:1])
+// #pragma acc update device(l[0:1])
+#pragma acc update device(l->pool_width,l->input_depth,l->input_width,l->input_height,l->pool_height)
+#pragma acc update device(l->stride,l->pad,l->output_depth,l->output_width,l->output_height)
+
     return l;
 }
 
@@ -486,18 +483,18 @@ pool_layer_t *change_pool_layer(pool_layer_t *l) {
     // pool_layer_t *l = (pool_layer_t *) malloc(sizeof(pool_layer_t));
 #pragma acc parallel loop present(l)
     for(int i=0;i<1;i++){
-        l->pool_width -=2;
-        l->input_depth -=2;
-        l->input_width -=2;
-        l->input_height -=2;
+        l->pool_width =1;
+        l->input_depth =30;
+        l->input_width =30;
+        l->input_height =2;
 
         l->pool_height = l->pool_width;
-        l->stride -=2;
-        l->pad -=2;
+        l->stride =1;
+        l->pad = 1;
 
-        l->output_depth -=2;
-        l->output_width = floor((l->input_width + l->pad * 2 - l->pool_width) / l->stride + 1);
-        l->output_height = floor((l->input_height + l->pad * 2 - l->pool_height) / l->stride + 1);
+        l->output_depth = 15;
+        l->output_width = 15;
+        l->output_height = 15;
     }
     return l;
 }

@@ -135,6 +135,7 @@ volume_t *change_volume(volume_t *new_vol, double value) {
     return new_vol;
 }
 //TEST: Change value in volume on GPU
+// #pragma acc routine
 volume_t *change_volume_acc(volume_t *new_vol, double value) {
     // volume_t *new_vol = malloc(sizeof(struct volume));
     // new_vol->weights = malloc(sizeof(double) * width * height * depth);

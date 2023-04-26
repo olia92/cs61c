@@ -143,7 +143,7 @@ void free_batch(batch_t *b, int size) {
 
 void net_forward(network_t *net, batch_t *b, int start, int end) {
     conv_forward(net->l0, b[0], b[1], start, end);
-        printf("end conv\n");
+        printf("end conv 1\n");//TEST:
     relu_forward(net->l1, b[1], b[2], start, end); printf("end relu 1\n");
     pool_forward(net->l2, b[2], b[3], start, end);
     conv_forward(net->l3, b[3], b[4], start, end);
@@ -159,12 +159,11 @@ void net_forward(network_t *net, batch_t *b, int start, int end) {
 
 void net_classify(network_t *net, volume_t **input, double **likelihoods, int n) {
     int b_size=n;
-    int modulo = n%b_size;
     if(n>=1000){ b_size = 1000;}
-    // else{b_size=1;}
 
-    printf("    for batch size %d\n",b_size);
-    printf("    n mod b_size %d\n",n%b_size);
+    printf("    for batch size %d\n",b_size);//TEST:
+    printf("    n mod b_size %d\n",n%b_size);//TEST:
+
     batch_t *b = make_batch(net, b_size);// make batch transfers to GPU
 
     for (int i = 0; i < n; i+=b_size) {
@@ -201,7 +200,7 @@ void net_classify(network_t *net, volume_t **input, double **likelihoods, int n)
 
 //     fdump_volume(b[0][6],"output/b_0_6_d.txt");
 //TEST: b ^
-printf("end:Forward Pass\n");
+printf("end:Forward Pass\n");//TEST:
 #pragma acc update device(likelihoods[0:n][0:NUM_CLASSES])
     free_batch(b, b_size);
 }
