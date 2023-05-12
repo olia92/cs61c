@@ -134,7 +134,7 @@ double get_accuracy(int *samples, int *predictions, int n) {
 }
 
 // Perform the classification (this calls into the functions from network.c)
-void run_classification(int *samples, int n, double ***keep_likelihoods) {
+void  run_classification(int *samples, int n, double ***keep_likelihoods) {
     printf("Making network...\n");
     network_t *net = load_cnn_snapshot();
 
@@ -259,13 +259,21 @@ void do_layers_test(int argc, char **argv) {
     assert(sample_num >= 0 && sample_num < 50000);
 
     printf("Making network...\n");
-    network_t* net = load_cnn_snapshot();
+    network_t* net = load_cnn_snapshot();// Net is on device
 
-    batch_t* batch = make_batch(net, 1);
-    load_sample(batch[0][0], sample_num);
+    batch_t* batch = make_batch(net, 1); //make_batch, batch is  on device
+
+    load_sample(batch[0][0], sample_num); //load on host image
+
+// copy sample image on Device   
+    int we = batch[0][0]->width*batch[0][0]->height*batch[0][0]->depth;
+#pragma acc update device (batch[0][0]->weights[0:we])
 
     net_forward(net, batch, 0, 0);
 
+//pros to paron den xreiazetai, ginetai apo to net_forward()
+#pragma acc update self (batch[0][0]->weights[0:we])
+    
     for (int i = 0; i < NUM_LAYERS + 1; i++) {
         printf("LAYER%d,", i);
         dump_volume(batch[i][0]);

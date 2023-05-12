@@ -83,13 +83,12 @@ void copy_volume_host(volume_t *dest, volume_t *src) {
     assert(dest->height == src->height);
     assert(dest->depth == src->depth);
 
-    for (int x = 0; x < (dest->width*dest->height*dest->depth); x++) {
-        // for (int y = 0; y < dest->height; y++) {
-        //     for (int d = 0; d < dest->depth; d++) {
-                // volume_set(dest, x, y, d, volume_get(src, x, y, d));
-                dest->weights[x]=src->weights[x];
-        //     }
-        // }
+    for (int x = 0; x < dest->width; x++) {
+        for (int y = 0; y < dest->height; y++) {
+            for (int d = 0; d < dest->depth; d++) {
+                volume_set(dest, x, y, d, volume_get(src, x, y, d));
+            }
+        }
     }
 }
 
