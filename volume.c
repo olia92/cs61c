@@ -16,6 +16,7 @@
 
 #include "volume.h"
 
+int vol_count=0;
 #pragma acc routine seq
 inline double volume_get(volume_t *v, int x, int y, int d) {
     return v->weights[((v->width * y) + x) * v->depth + d];
@@ -27,7 +28,7 @@ inline void volume_set(volume_t *v, int x, int y, int d, double value) {
 }
 
 volume_t *make_volume(int width, int height, int depth, double value) {
-    volume_t *new_vol = malloc(sizeof(struct volume));
+    volume_t *new_vol = malloc(sizeof(struct volume));vol_count++;
 #pragma acc enter data create(new_vol[0:1])
     new_vol->weights = malloc(sizeof(double) * width * height * depth);
 #pragma acc enter data create(new_vol->weights[0:(width * height * depth)])

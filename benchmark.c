@@ -9,6 +9,7 @@
 #include "network.h"
 #include "volume.h"
 
+extern int vol_count;
 // Place where test data is stored on instructional machines.
 const char *DATA_FOLDER = "../cifar-10-batches-bin";
 const int DEFAULT_BENCHMARK_SIZE = 1200;
@@ -193,6 +194,7 @@ void  run_classification(int *samples, int n, double ***keep_likelihoods) {
 
     printf("%lf%% accuracy\n", 100 * get_accuracy(samples, predictions, n));
 
+printf("Vol_Count %d\n",vol_count);
     free_network(net);
 #pragma acc exit data delete(input)
 
