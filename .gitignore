@@ -1,0 +1,6 @@
+benchmark
+benchmark.o
+gmon.out
+layers.o
+network.o
+volume.o
